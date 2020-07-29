@@ -4,6 +4,11 @@ using UnityEngine;
 
 [System.Serializable]
 public class Save {
+    //////// Global ////////
+    public string sceneName;
+    public SerializableVector3 playerPosition;
+    public SerializableQuaternion playerQuaternion;
+
     //////// Player stats ////////
     // Nurturing
     public Stat shieldRecovery, staminaRecovery, ammoRecovery;
@@ -25,10 +30,14 @@ public class Save {
     public Dictionary<WordsType, List<string>> givenReplies;
 
     //////// Inventory ////////
-    public WeaponSO equippedWeapon;
-    public ArmorSO equippedArmor;
-    public List<PickableSO> inventoryItems;
+    public SerializablePickableSO equippedWeapon;
+    public SerializablePickableSO equippedArmor;
+    public List<SerializablePickableSO> inventoryConsumables;
 
     //////// Hotbar ////////
-    public ConsumableSO[] hotbarItems;
+    public SerializablePickableSO[] hotbarConsumables;
+
+    //////// Storage ////////
+    public int unlockedStorageSlotsAmount;
+    public List<SerializablePickableSO> storageContent;
 }

@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.SceneManagement;
 
-public enum GameState { Movement, Menu, Dialogue, Chest, Hotbar, Identify, Dead };
+public enum GameState { Movement, Menu, Dialogue, Chest, Hotbar, ItemSelector, Dead };
 
 public class GameMaster : MonoBehaviour {
     
@@ -14,7 +14,8 @@ public class GameMaster : MonoBehaviour {
     public static GameMaster Instance { get { return _instance; } }
 
     private void Awake() {
-        if (_instance == null) {
+        // If instance not yet created, or player goes back to the MainMenu, create new instance
+        if (_instance == null || SceneManager.GetActiveScene().name.Equals("MainMenu")) {
             _instance = this;
             DontDestroyOnLoad(gameObject);
         } else {
@@ -23,6 +24,9 @@ public class GameMaster : MonoBehaviour {
     }
 
     private CanvasMaster cm;
+
+    public const string SAVE_PATH = "/gamesave.save";
+    public Save latestSave { get; private set; }
 
     // Handle game state
     public GameState gameState { get; private set; }
@@ -54,7 +58,7 @@ public class GameMaster : MonoBehaviour {
                 cm.ShowCanvasBackround(true);
                 cm.ShowHUDCanvas(false);
                 break;
-            case GameState.Identify:
+            case GameState.ItemSelector:
                 cm.ShowCanvasBackround(true);
                 break;
         }
@@ -78,9 +82,14 @@ public class GameMaster : MonoBehaviour {
 
     private Save CreateSaveGameObject() {
         Save save = new Save();
+        // Save values of other classes
         PlayerStats.Instance.SavePlayerStats(save);
         CanvasMaster.Instance.SaveCanvasValues(save);
         Inventory.Instance.SaveInventory(save);
+        Storage.Instance.SaveStorage(save);
+
+        // Save Scene name
+        save.sceneName = SceneManager.GetActiveScene().name;
 
         return save;
     }
@@ -89,7 +98,7 @@ public class GameMaster : MonoBehaviour {
         Save save = CreateSaveGameObject();
 
         BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Create(Application.persistentDataPath + "/gamesave.save");
+        FileStream file = File.Create(Application.persistentDataPath + SAVE_PATH);
         bf.Serialize(file, save);
         file.Close();
 
@@ -97,15 +106,20 @@ public class GameMaster : MonoBehaviour {
     }
 
     public void LoadGame() {
-        if (File.Exists(Application.persistentDataPath + "/gamesave.save")) {
+        if (File.Exists(Application.persistentDataPath + SAVE_PATH)) {
             BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(Application.persistentDataPath + "/gamesave.save", FileMode.Open);
+            FileStream file = File.Open(Application.persistentDataPath + SAVE_PATH, FileMode.Open);
             Save save = (Save)bf.Deserialize(file);
+            latestSave = save; // Player needs to access this when it spawns
 
-            // Load different class values
+            // Load saved scene (Needs to be called before loading values from other classes)
+            SceneManager.LoadScene(save.sceneName);
+
+            // Load values of other classes
             PlayerStats.Instance.LoadPlayerStats(save);
             CanvasMaster.Instance.LoadCanvasValues(save);
             Inventory.Instance.LoadInventory(save);
+            Storage.Instance.LoadStorage(save);
 
             file.Close();
 
@@ -113,6 +127,10 @@ public class GameMaster : MonoBehaviour {
         } else {
             Debug.Log("No game saved!");
         }
+    }
+
+    public bool CheckIfSaveExists() {
+        return File.Exists(Application.persistentDataPath + SAVE_PATH);
     }
 
     // For testing purposes

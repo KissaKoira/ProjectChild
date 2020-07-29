@@ -16,7 +16,7 @@ public class Player : CharacterParent {
 
     // Testing purposes
     public float testDamageKeyU = 20;
-    public int testXpKeyX = 20;
+    public int testXpKeyX = 100;
 
     // Checking trigger presses to avoid "input not always registering"
     private Collider triggerCollider;
@@ -25,9 +25,9 @@ public class Player : CharacterParent {
         // Retrieve references
         gm = GameMaster.Instance;
         cm = CanvasMaster.Instance;
-        hotbar = cm.hotbarCanvas.GetComponent<HotbarCanvas>();
+        hotbar = cm.hotbarCanvas;
 
-        GameMaster.Instance.SetState(GameState.Movement);
+        gm.SetState(GameState.Movement);
         characterType = CharacterType.Player;
         stats = PlayerStats.Instance;
         inventory = Inventory.Instance;
@@ -40,6 +40,12 @@ public class Player : CharacterParent {
         RefreshStats();
 
         base.Start();
+
+        // Load player stuff if game is loaded
+        if (stats.loadPlayer) {
+            stats.loadPlayer = false;   // Inform that player has loaded
+            LoadPlayer(gm.latestSave);  // Load player stuff
+        }
 
         // Show player's hud
         hud.gameObject.SetActive(true);
@@ -70,6 +76,18 @@ public class Player : CharacterParent {
         RetrieveArmorValues();
     }
 
+    public void SavePlayer(Save save) {
+        // Save position
+        save.playerPosition = transform.position;
+        save.playerQuaternion = transform.rotation;
+    }
+
+    public void LoadPlayer(Save save) {
+        // Load position
+        transform.position = save.playerPosition;
+        transform.rotation = save.playerQuaternion;
+    }
+
     public override WeaponSO ChangeWeapon(WeaponSO weapon) {
         inventory.equippedWeapon = weapon;  // Add weapon to singleton inventory
         return base.ChangeWeapon(weapon);
@@ -88,18 +106,31 @@ public class Player : CharacterParent {
         // Check trigger interact presses
         if (triggerCollider != null && Input.GetButtonDown("Interact") && inputEnabled) {
             if (triggerCollider.CompareTag("Chest")) {
-                triggerCollider.GetComponent<Chest>().OpenChest();
+                triggerCollider.GetComponent<Chests>().OpenChest();
             }
         }
 
-        // Test taking damage
-        if (Input.GetKeyDown(KeyCode.U) && inputEnabled) {
-            TakeDamage(DamageType.Piercing, testDamageKeyU, 0);
-        }
-        
-        // Test gaining xp
-        if (Input.GetKeyDown(KeyCode.X) && inputEnabled) {
-            stats.GainXP(testXpKeyX);
+        // Debug tests
+        if (Application.isEditor) {
+            // Test taking damage
+            if (Input.GetKeyDown(KeyCode.U) && inputEnabled) {
+                TakeDamage(DamageType.Piercing, testDamageKeyU, 0);
+            }
+
+            // Test gaining xp
+            if (Input.GetKeyDown(KeyCode.X) && inputEnabled) {
+                stats.GainXP(testXpKeyX);
+            }
+
+            // Test saving
+            if (Input.GetKeyDown(KeyCode.O) && inputEnabled) {
+                GameMaster.Instance.SaveGame();
+            }
+
+            // Test loading
+            if (Input.GetKeyDown(KeyCode.P) && inputEnabled) {
+                GameMaster.Instance.LoadGame();
+            }
         }
 
         // Check hotbar presses
@@ -156,12 +187,6 @@ public class Player : CharacterParent {
                     HP += ConsumableSO.RIG_HP_TO_RECOVER_PERCENTAGE;
                 }
                 break;
-            /************ TOY ************/
-            case ConsumableType.Toy:
-                float xpToGain = consumable.expToGain;
-                info.ShowXpPercentageGainedText(xpToGain);
-                stats.GainPercentageXP(xpToGain);
-                break;
         }
     }
 
@@ -194,7 +219,7 @@ public class Player : CharacterParent {
 
         if (collider.CompareTag("Chest")) {
             hud.HideInteract();
-            cm.chestCanvas.GetComponent<ChestCanvas>().CloseChest();
+            cm.chestCanvas.CloseChest();
         }
     }
 }

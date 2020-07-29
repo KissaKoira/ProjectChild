@@ -26,6 +26,8 @@ public class PlayerStats : MonoBehaviour {
     public Player player;
 
     // Stats to save and load
+    public bool loadPlayer;
+
     // Nurturing
     public Stat shieldRecovery { get; private set; }
     public Stat staminaRecovery { get; private set; }
@@ -125,10 +127,11 @@ public class PlayerStats : MonoBehaviour {
         save.nextLevelUpXp = nextLevelUpXp;
         save.lastLevelUpXp = lastLevelUpXp;
         save.redeemableLevelPoints = redeemableLevelPoints;
+
+        player.SavePlayer(save);
     }
 
     public void LoadPlayerStats(Save save) {
-        Debug.Log(save.piercingDmg.name);
         shieldRecovery.LoadStat(save.shieldRecovery);
         staminaRecovery.LoadStat(save.staminaRecovery);
         ammoRecovery.LoadStat(save.ammoRecovery);
@@ -154,6 +157,9 @@ public class PlayerStats : MonoBehaviour {
         nextLevelUpXp = save.nextLevelUpXp;
         lastLevelUpXp = save.lastLevelUpXp;
         redeemableLevelPoints = save.redeemableLevelPoints;
+
+        // Inform player that it should load it's stuff
+        loadPlayer = true;
 
         RefreshPlayerForStatChanges();
     }
@@ -220,10 +226,8 @@ public class PlayerStats : MonoBehaviour {
 
     private void RefreshPlayerForStatChanges() {
         // Refresh player stats
-        GameObject go = GameObject.FindWithTag("Player");
-
-        if (go != null)
-            go.GetComponent<Player>().RefreshStats();
+        if (player != null)
+            player.RefreshStats();
     }
 
     public void GainXP(int amount) {
@@ -237,10 +241,19 @@ public class PlayerStats : MonoBehaviour {
         hud.AdjustHUDBarXP(lastLevelUpXp, nextLevelUpXp, xp);
     }
 
-    public void GainPercentageXP(float percentage) {
+    public void UseToy(ConsumableSO toy) {
+        int currentLevel = level;
         float fullPercentage = nextLevelUpXp - lastLevelUpXp;
-        float xpToGain = fullPercentage * (percentage / 100);
+        float xpToGain = fullPercentage * (toy.expToGain / 100);
         GainXP((int)xpToGain);
+
+        if (currentLevel != level) {
+            // If player gained a level, use that level to increase stats
+            RandomizeGainedStat(toy.toyWordsType);
+        } else {
+            // Else show info text that player gained xp
+            CanvasMaster.Instance.topInfoCanvas.ShowXpPercentageGainedText(toy.expToGain);
+        }
     }
 
     private void LevelUp() {
@@ -256,6 +269,7 @@ public class PlayerStats : MonoBehaviour {
         // Calculate next level up xp
         nextLevelUpXp += xpToAdd;
 
-        // ADD LEVEL UP STUFF TO OPEN DIALOGUE LATER
+        // Check if storage slot is unlocked
+        Storage.Instance.CheckStorageUnlock(level);
     }
 }

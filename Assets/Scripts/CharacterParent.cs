@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Presets;
 
 public class CharacterParent : MonoBehaviour {
 
@@ -58,10 +57,11 @@ public class CharacterParent : MonoBehaviour {
     // Movement speed when taking armor values to account
     public float movementSpeedMultiplier { get; private set; }
 
-    // Recovery delay values
+    // Delay values
     private const float RECOVERY_DELAY_TIME = 1.5f;
-    private const int D_SHIELD = 0, D_STAMINA = 1;
-    private float[] delays = new float[] { 0, 0 };
+    private const float MELEE_DELAY_TIME = 3f;
+    private const int D_SHIELD = 0, D_STAMINA = 1, D_MELEE = 2;
+    private float[] delays = new float[] { 0, 0, 0 };
 
     // Stamina and ammo boosts
     private const int DEFAULT_BOOST = 1;
@@ -75,7 +75,6 @@ public class CharacterParent : MonoBehaviour {
 
     // Playing audio
     [SerializeField]
-    private Preset audioPreset;
     private AudioSource audioSource;
 
     // Weapon and armor
@@ -104,13 +103,12 @@ public class CharacterParent : MonoBehaviour {
     private float armorDecreaseShieldRecoveryDelay;
     private float armorDecreaseOpponentCriticalRate;
     private float armorDecreaseOpponentCriticalMultiplier;
-    private float armorReduceStaminaRecoveryRate;
+    private float armorIncreaseStaminaRecoveryDelay;
 
     public virtual void Start() {
         hud = CanvasMaster.Instance.HUDCanvas.GetComponent<HUDCanvas>();
         // Create audio component and add preset
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioPreset.ApplyTo(audioSource);
+        audioSource = gameObject.GetComponent<AudioSource>();
         // Retrieve bullet point
         bulletPoint = transform.Find("BulletPoint").gameObject;
 
@@ -139,8 +137,10 @@ public class CharacterParent : MonoBehaviour {
             maxShield += armor.increaseShield;
             armorDecreaseOpponentCriticalRate = armor.decreaseOpponentCriticalRate;
             armorDecreaseOpponentCriticalMultiplier = armor.decreaseOpponentCriticalMultiplier / 100;
+            // Divide by 100 to make for example 80% to 0.8, then multiply by base value
             movementSpeedMultiplier = movementSpd - ((armor.reduceMovementSpeed / 100) * movementSpd);
-            armorReduceStaminaRecoveryRate = armor.reduceStaminaRecoveryRate;
+            // Divide by 100 to make for example 80% to 0.8, then multiply by base value
+            armorIncreaseStaminaRecoveryDelay = (armor.increaseStaminaRecoveryDelay / 100) * RECOVERY_DELAY_TIME;
         }
     }
 
@@ -181,7 +181,7 @@ public class CharacterParent : MonoBehaviour {
     }
 
     protected virtual void Update() {
-        // Count down shield and stamina recovery delay times
+        // Count down different delay times
         for (int i = 0; i < delays.Length; i++) {
             if (delays[i] > 0)
                 delays[i] -= Time.deltaTime;
@@ -261,6 +261,7 @@ public class CharacterParent : MonoBehaviour {
                     {
                         crosshairPoint = hit.point;
                         bulletDirection = crosshairPoint - bulletPoint.transform.position;
+                        Debug.Log(hit.collider.gameObject.name);
                     }
                     else
                     {
@@ -297,6 +298,37 @@ public class CharacterParent : MonoBehaviour {
         AMMO = 100;
     }
 
+    /// <summary>
+    /// Calculates if character has enough stamina to do the action.
+    /// 
+    /// If there is enough stamina, it will be used.
+    /// </summary>
+    /// <param name="amount">amount of stamina the action uses</param>
+    /// <returns>true if there is enough</returns>
+    public bool IsEnoughStamina(float amount) {
+        if (STAMINA >= amount) {
+            STAMINA -= amount;
+            // Add delay to shield recovery
+            delays[D_STAMINA] = RECOVERY_DELAY_TIME + armorIncreaseStaminaRecoveryDelay;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if last melee hit delay has ended.
+    /// </summary>
+    /// <returns>true if character is able to melee</returns>
+    public bool IsAbleToMelee() {
+        if (delays[D_MELEE] <= 0) {
+            delays[D_MELEE] = MELEE_DELAY_TIME / attackSpd;
+            return true;
+        }
+
+        return false;
+    }
+
     private float CalculateBulletDamage() {
         float damageToCause = weaponDamage;
 
@@ -317,6 +349,7 @@ public class CharacterParent : MonoBehaviour {
     }
 
     protected virtual void TakeDamage(DamageType type, float amount, float criticalRate) {
+        Debug.Log("takeDamage");
         // Check if damage got dodged
         if (Helper.CheckPercentage(dodgeRate)) {
             Debug.Log("Dodged");

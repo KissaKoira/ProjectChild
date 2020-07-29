@@ -17,6 +17,12 @@ public class playerMovement : MonoBehaviour
     public float gravity = -9.81f;
     public float jumpHeight = 10f;
 
+    // Stamina usage
+    private const float DASH_COST = 30;
+    private const float MELEE_COST = 25;
+
+    public bool dashing = false;
+
     private Vector3 xzMovement;
 
     public Transform groundCheck;
@@ -69,6 +75,19 @@ public class playerMovement : MonoBehaviour
             animator.SetBool("Strafing", false);
         }
 
+        if (Input.GetButtonDown("Fire2") &&             // If user presses melee button
+            playerScript.IsAbleToMelee() &&             // If player's last melee delay is over
+            playerScript.IsEnoughStamina(MELEE_COST) && // If player has enough stamina to melee
+            inputEnabled)                               // If player is able to control the character
+        {
+            animator.SetTrigger("Melee");
+        }
+
+        if (Input.GetButtonDown("Dash") && playerScript.IsEnoughStamina(DASH_COST) && inputEnabled)
+        {
+            animator.SetTrigger("Dash");
+        }
+
         if(isGrounded && velocity.y < 0)
         {
             velocity.y = 0;
@@ -112,7 +131,11 @@ public class playerMovement : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
 
-        controller.Move(velocity * Time.deltaTime + xzMovement);
+        if (!dashing)
+        {
+            controller.Move(velocity * Time.deltaTime + xzMovement);
+        }
+        
         xzMovement = new Vector3(0, 0, 0);
 
         //Shooting mechanics

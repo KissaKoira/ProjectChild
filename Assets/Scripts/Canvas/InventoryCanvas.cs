@@ -32,9 +32,9 @@ public class InventoryCanvas : MonoBehaviour {
 
     // ConsumableItems
     public ConsumablesScrollSystem consumableScrollSystem;
-    public TextMeshProUGUI selectedItemName, selectedItemDescription;
-    public GameObject itemStatsDisplay, scannerStats, batteryStats, comsatLinkStats, rigStats, scrapStats, toyStats;
+    public GameObject itemStatsDisplay;
     private ConsumableSO selectedItem;
+    public ItemDisplay itemDisplay;
     private HotbarCanvas hotbar;
 
     private CanvasSounds sounds;
@@ -46,7 +46,7 @@ public class InventoryCanvas : MonoBehaviour {
         CanvasMaster cv = CanvasMaster.Instance;
         animator = cv.uiAnimator;
         sounds = cv.canvasSounds;
-        hotbar = cv.hotbarCanvas.GetComponent<HotbarCanvas>();
+        hotbar = cv.hotbarCanvas;
         categoryObjects = new GameObject[] { weaponObj, armorObj, consumablesObj, miscObj };
 
         // Hide debug menu stuff
@@ -146,9 +146,13 @@ public class InventoryCanvas : MonoBehaviour {
         itemStatsDisplay.SetActive(false); // Disable item stats display since item is not yet chosen
     }
 
+    /// <summary>
+    /// Closes all sub categories.
+    /// 
+    /// Close button calls this method.
+    /// </summary>
     public void CloseSubcategory() {
         ShowRequiredCategory(NONE);
-        sounds.PlaySound(sounds.BUTTON_BACK);
     }
 
     /// <summary>
@@ -156,69 +160,12 @@ public class InventoryCanvas : MonoBehaviour {
     /// </summary>
     /// <param name="con">item to get the information from</param>
     private void ShowItemInfo(ConsumableSO con) {
-        sounds.PlaySound(sounds.BUTTON_SELECT);
-        ConsumableStatHolder holder;
-        ConsumableType type = con.consumableType;
         // Activate correct objects
         itemStatsDisplay.SetActive(true);
-        ShowCorrectItemStats(type);
         // Set selected item for equip and use buttons
         selectedItem = con;
-        // Set name
-        selectedItemName.text = con.name;
-
-        // Set description text and other stat texts based on consumable type
-        switch (type) {
-            case ConsumableType.Scanner:
-                selectedItemDescription.text = ConsumableSO.DESCRIPTION_SCANNER;
-                holder = scannerStats.GetComponent<ConsumableStatHolder>();
-                holder.identificationChance.text = con.identificationChance.ToString() + "%";
-                break;
-            case ConsumableType.Battery:
-                selectedItemDescription.text = ConsumableSO.DESCRIPTION_BATTERY;
-                holder = batteryStats.GetComponent<ConsumableStatHolder>();
-                holder.shieldRecoveryPercentage.text = con.shieldRecoveryPercentage.ToString() + "%";
-                holder.boostStaminaRecoverySpeed.text = (con.boostStaminaRecoverySpeed * 100).ToString() + "%";
-                holder.boostAmmoRecoverySpeed.text = (con.boostAmmoRecoverySpeed * 100).ToString() + "%";
-                holder.boostTimeInSeconds.text = con.boostTimeInSeconds.ToString();
-                holder.batteryType.text = con.batteryType.ToString();
-                break;
-            case ConsumableType.ComsatLink:
-                selectedItemDescription.text = ConsumableSO.DESCRIPTION_COMSAT_LINK;
-                holder = comsatLinkStats.GetComponent<ConsumableStatHolder>();
-                holder.chanceToBeSuccessful.text = con.chanceToBeSuccessful.ToString() + "%";
-                break;
-            case ConsumableType.Rig:
-                selectedItemDescription.text = ConsumableSO.DESCRIPTION_RIG;
-                holder = rigStats.GetComponent<ConsumableStatHolder>();
-                holder.chanceToBeSuccessful.text = con.chanceToBeSuccessful.ToString() + "%";
-                break;
-            case ConsumableType.Scrap:
-                selectedItemDescription.text = ConsumableSO.DESCRIPTION_SCRAP;
-                holder = scrapStats.GetComponent<ConsumableStatHolder>();
-                holder.creditValue.text = con.creditValue.ToString();
-                holder.craftValue.text = con.craftValue.ToString();
-                holder.chanceToTurnIntoToy.text = con.chanceToTurnIntoToy.ToString() + "%";
-                break;
-            case ConsumableType.Toy:
-                selectedItemDescription.text = ConsumableSO.DESCRIPTION_TOY;
-                holder = toyStats.GetComponent<ConsumableStatHolder>();
-                holder.expToGain.text = con.expToGain.ToString() + "%";
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Shows and hides item stats which should be shown and hidden.
-    /// </summary>
-    /// <param name="type">type of stats to show</param>
-    private void ShowCorrectItemStats(ConsumableType type) {
-        scannerStats.SetActive(type.Equals(ConsumableType.Scanner));
-        batteryStats.SetActive(type.Equals(ConsumableType.Battery));
-        comsatLinkStats.SetActive(type.Equals(ConsumableType.ComsatLink));
-        rigStats.SetActive(type.Equals(ConsumableType.Rig));
-        scrapStats.SetActive(type.Equals(ConsumableType.Scrap));
-        toyStats.SetActive(type.Equals(ConsumableType.Toy));
+        // Set item info
+        itemDisplay.ShowItemDisplay(selectedItem);
     }
 
     public void ShowHotbarItemInfo(ConsumableSO consumable) {
@@ -230,7 +177,6 @@ public class InventoryCanvas : MonoBehaviour {
     }
 
     public void EquipItem() {
-        sounds.PlaySound(sounds.BUTTON_SELECT);
         hotbar.SetIncomingItem(selectedItem);
     }
 
@@ -272,18 +218,11 @@ public class InventoryCanvas : MonoBehaviour {
     /// </summary>
     /// <param name="category">category which should be open</param>
     private void ShowRequiredCategory(int category) {
-        // If category was open and player clicked the same category, close it
-        if (category == currentlyOpen && category != NONE) {
-            sounds.PlaySound(sounds.BUTTON_BACK);
-            category = NONE;
-        }
-        
         // If element is none, reset menu and categories scale
         if (category == NONE) {
             ScaleMenuAndCategories(false);
         } else {
             // Else category is opened, so play sound
-            sounds.PlaySound(sounds.BUTTON_SELECT);
             ScaleMenuAndCategories(true);
         }
 

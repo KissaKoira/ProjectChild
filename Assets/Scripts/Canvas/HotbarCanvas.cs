@@ -21,7 +21,7 @@ public class HotbarCanvas : MonoBehaviour {
         changingItemsPanel.SetActive(false);
     }
 
-    void Start() {
+    public void Initialize() {
         hotbarButtonAmount = buttonLayout.transform.childCount;
         hotbarButtons = new GameObject[hotbarButtonAmount];
         hotbarItems = new ConsumableSO[hotbarButtonAmount];
@@ -41,18 +41,23 @@ public class HotbarCanvas : MonoBehaviour {
     public void HotbarButtonClicked(int index) {
         GameMaster gm = GameMaster.Instance;
         ConsumableSO clickedItem = hotbarItems[index];
+        // Play sound
+        CanvasSounds sounds = CanvasMaster.Instance.canvasSounds;
 
         if (gm.gameState.Equals(GameState.Hotbar)) {
             // Swap hotbar button item
             SwapHotbarItem(index);
+            sounds.PlaySound(sounds.BUTTON_SELECT);
         } else if (gm.gameState.Equals(GameState.Menu)) {
             // Show item info in InventoryCanvas
             if (clickedItem != null)
                 CanvasMaster.Instance.inventoryCanvas.GetComponent<InventoryCanvas>().ShowHotbarItemInfo(clickedItem);
         } else if (gm.gameState.Equals(GameState.Movement)) {
             // Use item
-            if (clickedItem != null)
+            if (clickedItem != null) {
                 Inventory.Instance.UseConsumable(clickedItem);
+                sounds.PlaySound(sounds.BUTTON_SELECT);
+            }
         }
     }
 
@@ -101,12 +106,32 @@ public class HotbarCanvas : MonoBehaviour {
     }
 
     public void LoadHotbar(Save save) {
-        hotbarItems = save.hotbarItems;
+        // Convert serialized consumables to ConsumableSO
+        SOCreator creator = SOCreator.Instance;
+        for (int i = 0; i < hotbarButtonAmount; i++) {
+            SerializablePickableSO serialized = save.hotbarConsumables[i];
+            ConsumableSO con = null;
+            if (serialized != null) {
+                con = creator.CreateConsumable(serialized);
+            }
+            hotbarItems[i] = con;
+        }
 
         RefreshHotbarImages();
     }
 
     public void SaveHotbar(Save save) {
-        save.hotbarItems = hotbarItems;
+        // Convert hotbar consumables to a serializable format
+        SerializablePickableSO[] serializableConsumables = new SerializablePickableSO[hotbarButtonAmount];
+        for (int i = 0; i < hotbarButtonAmount; i++) {
+            ConsumableSO con = hotbarItems[i];
+            if (con != null) {
+                serializableConsumables[i] = new SerializablePickableSO(con);
+            } else {
+                serializableConsumables[i] = null;
+            }
+            
+        }
+        save.hotbarConsumables = serializableConsumables;
     }
 }
