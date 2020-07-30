@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Atlas.unity
+    guid: 3decca43441260f419cea5f9411ce4a3
+  - enabled: 1
+    path: Assets/Scenes/Forest.unity
+    guid: de4499fdcb12e8a4cb3402deb1f88bcf
+  - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 5c2ab3293e7268945ae3613f5db7d5d7
   - enabled: 1
