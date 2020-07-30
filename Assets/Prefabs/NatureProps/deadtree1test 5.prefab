@@ -1512,6 +1512,7 @@ GameObject:
   - component: {fileID: 1874135723335028457}
   - component: {fileID: 813250211557640576}
   - component: {fileID: 6092806701042729896}
+  - component: {fileID: 7728733922505914521}
   m_Layer: 0
   m_Name: deadtree1test 5
   m_TagString: Untagged
@@ -1630,7 +1631,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: -7326023354272825011, guid: d0eb37ebb77f56b47b2e1328af04ba89, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1651,6 +1652,14 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!33 &7728733922505914521
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3195617683749469434}
+  m_Mesh: {fileID: -5495902117074765545, guid: e5c6e55f49147a143a9beb9d62396fec, type: 3}
 --- !u!1 &3540361673698142722
 GameObject:
   m_ObjectHideFlags: 0
