@@ -5,8 +5,14 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Different states that the game can be in during gameplay.
+/// </summary>
 public enum GameState { Movement, Menu, Dialogue, Chest, Hotbar, ItemSelector, Dead };
 
+/// <summary>
+/// Controls the main aspects of the game.
+/// </summary>
 public class GameMaster : MonoBehaviour {
     
     // Make class static and destroy if script already exists
@@ -14,8 +20,8 @@ public class GameMaster : MonoBehaviour {
     public static GameMaster Instance { get { return _instance; } }
 
     private void Awake() {
-        // If instance not yet created, or player goes back to the MainMenu, create new instance
-        if (_instance == null || SceneManager.GetActiveScene().name.Equals("MainMenu")) {
+        // If instance not yet created
+        if (_instance == null) {
             _instance = this;
             DontDestroyOnLoad(gameObject);
         } else {
@@ -30,8 +36,13 @@ public class GameMaster : MonoBehaviour {
 
     // Handle game state
     public GameState gameState { get; private set; }
+    /// <summary>
+    /// Toggles different values depending of the game state.
+    /// </summary>
+    /// <param name="state">current game state</param>
     public void SetState(GameState state) {
         gameState = state;
+        cm = CanvasMaster.Instance;
 
         // Show crosshair if state is movement
         cm.ShowCrosshair(gameState.Equals(GameState.Movement) ? true : false);
@@ -54,8 +65,10 @@ public class GameMaster : MonoBehaviour {
                 break;
             case GameState.Dialogue:
             case GameState.Chest:
-            case GameState.Dead:
                 cm.ShowCanvasBackround(true);
+                cm.ShowHUDCanvas(false);
+                break;
+            case GameState.Dead:
                 cm.ShowHUDCanvas(false);
                 break;
             case GameState.ItemSelector:
@@ -70,6 +83,7 @@ public class GameMaster : MonoBehaviour {
         cursorVisible = show;
         Cursor.visible = cursorVisible;
 
+        // Toggles the lock mode depending of the cursor visibility
         if (cursorVisible)
             Cursor.lockState = CursorLockMode.Confined;
         else
@@ -80,6 +94,10 @@ public class GameMaster : MonoBehaviour {
         cm = CanvasMaster.Instance;
     }
 
+    /// <summary>
+    /// Creates a save game object which holds all the save variables.
+    /// </summary>
+    /// <returns>save object which has it's values changed</returns>
     private Save CreateSaveGameObject() {
         Save save = new Save();
         // Save values of other classes
@@ -94,9 +112,13 @@ public class GameMaster : MonoBehaviour {
         return save;
     }
 
+    /// <summary>
+    /// Saves the game.
+    /// </summary>
     public void SaveGame() {
         Save save = CreateSaveGameObject();
 
+        // Format and save to a file
         BinaryFormatter bf = new BinaryFormatter();
         FileStream file = File.Create(Application.persistentDataPath + SAVE_PATH);
         bf.Serialize(file, save);
@@ -105,8 +127,12 @@ public class GameMaster : MonoBehaviour {
         Debug.Log("Game Saved");
     }
 
+    /// <summary>
+    /// Loads the game.
+    /// </summary>
     public void LoadGame() {
         if (File.Exists(Application.persistentDataPath + SAVE_PATH)) {
+            // If file exists, deserialize the file
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(Application.persistentDataPath + SAVE_PATH, FileMode.Open);
             Save save = (Save)bf.Deserialize(file);
@@ -133,10 +159,15 @@ public class GameMaster : MonoBehaviour {
         return File.Exists(Application.persistentDataPath + SAVE_PATH);
     }
 
-    // For testing purposes
-    public void Restart() {
+    /// <summary>
+    /// Moves back to the main menu, resetting singletons.
+    /// </summary>
+    public void BackToMainMenu() {
+        // Destroy singletons when moving to main menu so necessary values
+        // gets reset
+        DestroyImmediate(GameMaster.Instance.gameObject);
+        DestroyImmediate(CanvasMaster.Instance.gameObject);
         SceneManager.LoadScene(0);
-        CanvasMaster.Instance.ShowGameOverCanvas(false);
     }
 
     public void QuitGame() {

@@ -1306,8 +1306,8 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.30600178
-      value: 0.5755184
+      time: 0.05678761
+      value: 0.61728173
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -2930,7 +2930,7 @@ Transform:
   - {fileID: 1894971863}
   - {fileID: 1030271670}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &223627587
 GameObject:
@@ -4992,8 +4992,8 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.30600178
-      value: 0.5755184
+      time: 0.05678761
+      value: 0.61728173
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -5057,6 +5057,25 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 211048798}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &400451342 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1757913987291971642, guid: 41af1055f32cbcc46b4c5a6de9532058,
+    type: 3}
+  m_PrefabInstance: {fileID: 1757913986905885717}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &400451344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 400451342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbfe0d9324a45e94c8bbe621a2860559, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lastShot: 0
 --- !u!1001 &401896705
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7572,9 +7591,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 564011392}
+  - component: {fileID: 564011393}
   m_Layer: 10
   m_Name: BulletPoint
-  m_TagString: Untagged
+  m_TagString: BulletPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7593,6 +7613,19 @@ Transform:
   m_Father: {fileID: 79078601}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: -0.60200006, z: 0}
+--- !u!114 &564011393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 564011391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbfe0d9324a45e94c8bbe621a2860559, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lastShot: 0
 --- !u!1 &565117407
 GameObject:
   m_ObjectHideFlags: 0
@@ -10333,7 +10366,7 @@ Transform:
   - {fileID: 1979135009}
   - {fileID: 904682580}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &784851772
 PrefabInstance:
@@ -12083,7 +12116,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.15818441, y: -0.0031481066, z: 0.00050433376, w: 0.98740447}
+  m_LocalRotation: {x: 0.15818441, y: -0.0031481069, z: 0.00050433376, w: 0.98740447}
   m_LocalPosition: {x: 284.6, y: 62.317062, z: -559.6763}
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_Children: []
@@ -12529,8 +12562,8 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.30600178
-      value: 0.5755184
+      time: 0.05678761
+      value: 0.61728173
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -19025,9 +19058,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1546277598}
+  - component: {fileID: 1546277599}
   m_Layer: 10
   m_Name: BulletPoint
-  m_TagString: Untagged
+  m_TagString: BulletPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -19046,6 +19080,19 @@ Transform:
   m_Father: {fileID: 393735256}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: -0.60200006, z: 0}
+--- !u!114 &1546277599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546277597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbfe0d9324a45e94c8bbe621a2860559, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lastShot: 0
 --- !u!1 &1546419583
 GameObject:
   m_ObjectHideFlags: 0
@@ -20914,7 +20961,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1691366957}
-  m_LocalRotation: {x: 0.1582237, y: -0.0031372705, z: 0.00050272606, w: 0.9873982}
+  m_LocalRotation: {x: 0.1582237, y: -0.0031372707, z: 0.0005027261, w: 0.9873982}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -26218,6 +26265,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -28.319511
+      objectReference: {fileID: 0}
+    - target: {fileID: 1757913987291971642, guid: 41af1055f32cbcc46b4c5a6de9532058,
+        type: 3}
+      propertyPath: m_TagString
+      value: BulletPoint
       objectReference: {fileID: 0}
     - target: {fileID: 1757913987301882962, guid: 41af1055f32cbcc46b4c5a6de9532058,
         type: 3}

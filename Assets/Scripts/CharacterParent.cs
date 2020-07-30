@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Holds all the variables and methods which both the
+/// player and the enemies share.
+/// </summary>
 public class CharacterParent : MonoBehaviour {
 
     public enum CharacterType { Player, Enemy };
@@ -9,6 +13,7 @@ public class CharacterParent : MonoBehaviour {
     // Temporary stats
     private float hp, shield, stamina, ammo;
 
+    /********* ADJUST DIFFERENT HUD BAR COMPONENTS WHEN VALUES CHANGE *********/
     public float HP { get { return hp; }
         protected set {
             hp = value;
@@ -22,7 +27,7 @@ public class CharacterParent : MonoBehaviour {
         protected set {
             shield = value;
             if (characterType == CharacterType.Player)
-                hud.AdjustHUDBarShield(maxShield, SHIELD);
+                hud.AdjustHUDBarShield(hud.shieldBar, maxShield, SHIELD);
         }
     }
 
@@ -43,6 +48,7 @@ public class CharacterParent : MonoBehaviour {
                 hud.AdjustAmmoAmount(weapon.ammoSize, ammo);
         }
     }
+    /************************************************************************/
 
     protected float shieldRecovery, staminaRecovery, ammoRecovery, dodgeRate, criticalRate,
         rareItemFindRate, piercingDmg, kineticDmg, energyDmg, piercingRes, kineticRes, energyRes,
@@ -97,7 +103,7 @@ public class CharacterParent : MonoBehaviour {
     private float weaponReloadTime;
     // Weapon prefab stuff
     public GameObject weaponBullet;
-    private GameObject bulletPoint;
+    private List<GameObject> bulletPoints = new List<GameObject>();
 
     // Armor values
     private float armorDecreaseShieldRecoveryDelay;
@@ -109,14 +115,26 @@ public class CharacterParent : MonoBehaviour {
         hud = CanvasMaster.Instance.HUDCanvas.GetComponent<HUDCanvas>();
         // Create audio component and add preset
         audioSource = gameObject.GetComponent<AudioSource>();
-        // Retrieve bullet point
-        bulletPoint = transform.Find("BulletPoint").gameObject;
+        // Retrieve bullet points
+        foreach (GameObject bulletPoint in GameObject.FindGameObjectsWithTag("BulletPoint"))
+        {
+            if (bulletPoint.transform.IsChildOf(this.transform))
+            {
+                bulletPoints.Add(bulletPoint);
+            }
+        }
 
         RetrieveWeaponValues();
         RetrieveArmorValues();
         ResetValues();
     }
 
+    /// <summary>
+    /// Retrieves values from weapon.
+    /// 
+    /// These variables could possibly be removed and just access the values
+    /// through the weapon.value instead when needed.
+    /// </summary>
     private void RetrieveWeaponValues() {
         weaponShootingSound = weapon.shootingSound;
         weaponReloadSound = weapon.reloadingSound;
@@ -128,6 +146,13 @@ public class CharacterParent : MonoBehaviour {
         weaponReloadTime = weapon.reloadTime;
     }
 
+    /// <summary>
+    /// Retrieves values from armor.
+    /// 
+    /// These variables are good to have, since that way you don't
+    /// have to do a null check over every value. You could also
+    /// make an empty armor object, which has default values.
+    /// </summary>
     protected void RetrieveArmorValues() {
         maxShield = MAX_VALUE;
         movementSpeedMultiplier = movementSpd;
@@ -159,6 +184,11 @@ public class CharacterParent : MonoBehaviour {
         StartCoroutine(Shooting());
     }
 
+    /// <summary>
+    /// Changes the weapon.
+    /// </summary>
+    /// <param name="weapon">weapon to change to</param>
+    /// <returns>the old weapon</returns>
     public virtual WeaponSO ChangeWeapon(WeaponSO weapon) {
         WeaponSO oldWeapon = this.weapon;
         this.weapon = weapon;
@@ -167,6 +197,11 @@ public class CharacterParent : MonoBehaviour {
         return oldWeapon;
     }
 
+    /// <summary>
+    /// Changes the armor.
+    /// </summary>
+    /// <param name="armor">armor to change to</param>
+    /// <returns>the old armor</returns>
     public virtual ArmorSO ChangeArmor(ArmorSO armor) {
         ArmorSO oldArmor = this.armor;
         this.armor = armor;
@@ -175,6 +210,12 @@ public class CharacterParent : MonoBehaviour {
         return oldArmor;
     }
 
+    /// <summary>
+    /// Boosts a recovery value for a certain amount and time.
+    /// </summary>
+    /// <param name="boostType">recovery to boost</param>
+    /// <param name="multiplier">amount to boost</param>
+    /// <param name="time">time that the boost lasts</param>
     protected void BoostRecovery(int boostType, float multiplier, float time) {
         boostMultiPlier[boostType] = multiplier;
         boostTime[boostType] = time;
@@ -250,6 +291,32 @@ public class CharacterParent : MonoBehaviour {
                 // Set bulletDirection towards crosshair point for the player / towards player for enemies
                 Vector3 bulletDirection = transform.forward;
 
+                GameObject bulletPoint = bulletPoints[0];
+
+                if (bulletPoints.Count > 1)
+                {
+                    for(int i = 0; i < bulletPoints.Count; i++)
+                    {
+                        if (bulletPoints[i].GetComponent<bulletPoint>().lastShot)
+                        {
+                            bulletPoints[i].GetComponent<bulletPoint>().lastShot = false;
+
+                            if((i + 1) < bulletPoints.Count)
+                            {
+                                bulletPoint = bulletPoints[i + 1];
+                                bulletPoints[i + 1].GetComponent<bulletPoint>().lastShot = true;
+                            }
+                            else
+                            {
+                                bulletPoint = bulletPoints[0];
+                                bulletPoints[0].GetComponent<bulletPoint>().lastShot = true;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+                 
                 if (characterType == CharacterType.Player)
                 {
                     Vector3 crosshairPoint = new Vector3(0, 0, 0);
@@ -271,7 +338,8 @@ public class CharacterParent : MonoBehaviour {
                 }
                 else if (characterType == CharacterType.Enemy)
                 {
-                    bulletDirection = GameObject.Find("Player").transform.position - bulletPoint.transform.position;
+                    //bulletDirection = GameObject.Find("Player").transform.position - bulletPoint.transform.position;
+                    bulletDirection = transform.forward;
                 }
 
                 // Set bullets position and speed
@@ -329,6 +397,10 @@ public class CharacterParent : MonoBehaviour {
         return false;
     }
 
+    /// <summary>
+    /// Calculates the bullet damage based on type.
+    /// </summary>
+    /// <returns>calculated bullet damage</returns>
     private float CalculateBulletDamage() {
         float damageToCause = weaponDamage;
 
@@ -348,15 +420,20 @@ public class CharacterParent : MonoBehaviour {
         return damageToCause;
     }
 
+    /// <summary>
+    /// Takes damage to character.
+    /// </summary>
+    /// <param name="type">type of damage to take</param>
+    /// <param name="amount">amount of damage to take</param>
+    /// <param name="criticalRate">critical rate that the damage has</param>
     protected virtual void TakeDamage(DamageType type, float amount, float criticalRate) {
-        Debug.Log("takeDamage");
         // Check if damage got dodged
         if (Helper.CheckPercentage(dodgeRate)) {
             Debug.Log("Dodged");
             return;
         }
 
-        // Check if it was a critical hit
+        // Check if it was a critical hit, take account the armor's critical modifiers
         if (Helper.CheckPercentage(criticalRate - armorDecreaseOpponentCriticalRate)) {
             Debug.Log("Critical hit");
             amount *= (Stat.CRITICAL_HIT_MULTIPLIER - armorDecreaseOpponentCriticalMultiplier);
@@ -397,7 +474,11 @@ public class CharacterParent : MonoBehaviour {
             Die();
     }
 
+    /// <summary>
+    /// Kills the character.
+    /// </summary>
     protected virtual void Die() {
+        // Reset necessary values
         alive = false;
         HP = 0;
         SHIELD = 0;

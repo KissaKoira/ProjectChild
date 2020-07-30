@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the player's values.
+/// </summary>
 public class Player : CharacterParent {
 
     // References to classes
     private GameMaster gm;
     private CanvasMaster cm;
     private HotbarCanvas hotbar;
-
     private Inventory inventory;
     private PlayerStats stats;
+    private PlayerSounds sounds;
 
     private Stat[] recoveryStats;
 
@@ -26,11 +29,14 @@ public class Player : CharacterParent {
         gm = GameMaster.Instance;
         cm = CanvasMaster.Instance;
         hotbar = cm.hotbarCanvas;
+        stats = PlayerStats.Instance;
+        sounds = PlayerSounds.Instance;
+        inventory = Inventory.Instance;
 
+        // Change state to movement when the player spawns
         gm.SetState(GameState.Movement);
         characterType = CharacterType.Player;
-        stats = PlayerStats.Instance;
-        inventory = Inventory.Instance;
+        
         stats.player = this;    // Add this player to singleton variable for better access
 
         // Get weapon and stats from the singleton stats
@@ -51,6 +57,12 @@ public class Player : CharacterParent {
         hud.gameObject.SetActive(true);
     }
 
+    /// <summary>
+    /// Refreshes the stats of the player.
+    /// 
+    /// Called when for example the player changes weapon or armor
+    /// or gains a level.
+    /// </summary>
     public void RefreshStats() {
         shieldRecovery = stats.shieldRecovery.currentValue;
         staminaRecovery = stats.staminaRecovery.currentValue;
@@ -76,23 +88,41 @@ public class Player : CharacterParent {
         RetrieveArmorValues();
     }
 
+    /// <summary>
+    /// Saves the player values.
+    /// </summary>
+    /// <param name="save">save object to save to</param>
     public void SavePlayer(Save save) {
         // Save position
         save.playerPosition = transform.position;
         save.playerQuaternion = transform.rotation;
     }
 
+    /// <summary>
+    /// Loads the player values.
+    /// </summary>
+    /// <param name="save">save object to load from</param>
     public void LoadPlayer(Save save) {
         // Load position
         transform.position = save.playerPosition;
         transform.rotation = save.playerQuaternion;
     }
 
+    /// <summary>
+    /// Changes the weapon for the player.
+    /// </summary>
+    /// <param name="weapon">weapon to change to</param>
+    /// <returns>old weapon</returns>
     public override WeaponSO ChangeWeapon(WeaponSO weapon) {
         inventory.equippedWeapon = weapon;  // Add weapon to singleton inventory
         return base.ChangeWeapon(weapon);
     }
 
+    /// <summary>
+    /// Changes the armor for the player.
+    /// </summary>
+    /// <param name="armor">armor to change to</param>
+    /// <returns>old armor</returns>
     public override ArmorSO ChangeArmor(ArmorSO armor) {
         inventory.equippedArmor = armor;    // Add armor to singleton inventory
         return base.ChangeArmor(armor);
@@ -147,6 +177,13 @@ public class Player : CharacterParent {
         }
     }
 
+    /// <summary>
+    /// Uses a consumable.
+    /// 
+    /// Some of the items are used here instead of Inventory,
+    /// since they are so heavily tied to player's values.
+    /// </summary>
+    /// <param name="consumable"></param>
     public void UseConsumable(ConsumableSO consumable) {
         TopInfoCanvas info = CanvasMaster.Instance.topInfoCanvas;
 
@@ -190,6 +227,41 @@ public class Player : CharacterParent {
         }
     }
 
+    /// <summary>
+    /// Plays the correct sound when taking damage.
+    /// </summary>
+    /// <param name="type">type of damage</param>
+    /// <param name="amount">amount of damage</param>
+    /// <param name="criticalRate">critical rate of damage</param>
+    protected override void TakeDamage(DamageType type, float amount, float criticalRate) {
+        // Save hp to a variable before taking damage
+        float hpBefore = HP;
+
+        // Call the base method which might adjust hp
+        base.TakeDamage(type, amount, criticalRate);
+
+        // Quit method if hp did not take damage
+        if (hpBefore == HP) {
+            return;
+        } else {
+            for (int i = 0; i < PlayerSounds.HIT_SPEECH_PERCENTAGES.Length; i++) {
+                int percentage = PlayerSounds.HIT_SPEECH_PERCENTAGES[i];
+
+                if (hpBefore > percentage && HP <= percentage) {
+                    sounds.PlayHealthLowAudio(i);
+                    return;
+                }
+            }
+
+            // If code makes it this far, then hit speech was not played,
+            // so play a hit grunt sound
+            sounds.PlayRandomTakeHitGrunt();
+        }
+    }
+
+    /// <summary>
+    /// Shows the game over canvas when the player dies.
+    /// </summary>
     protected override void Die() {
         base.Die();
         cm.ShowGameOverCanvas(true);
@@ -197,6 +269,10 @@ public class Player : CharacterParent {
 
     /**************** Collisions ****************/
 
+    /// <summary>
+    /// Handles collisions with enemy bullets.
+    /// </summary>
+    /// <param name="collision">happened collision</param>
     void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.CompareTag("Bullet")) {
             bulletController bullet = collision.gameObject.GetComponent<bulletController>();
@@ -206,6 +282,10 @@ public class Player : CharacterParent {
         }
     }
 
+    /// <summary>
+    /// Handles trigger enter events with chests.
+    /// </summary>
+    /// <param name="collider">happened trigger collision</param>
     void OnTriggerEnter(Collider collider) {
         triggerCollider = collider;
 
@@ -214,11 +294,20 @@ public class Player : CharacterParent {
         }
     }
 
+    /// <summary>
+    /// Handles trigger exit events with chests.
+    /// </summary>
+    /// <param name="collider">exited trigger collision</param>
     void OnTriggerExit(Collider collider) {
         triggerCollider = null;
 
         if (collider.CompareTag("Chest")) {
+            // Hide the interact panel
             hud.HideInteract();
+
+            // Close the chest
+            // (this is not basically needed anymore, since the
+            // player is not able to move when the chest is open)
             cm.chestCanvas.CloseChest();
         }
     }
