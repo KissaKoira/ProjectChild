@@ -1196,10 +1196,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 1694378050}
-  cam: {fileID: 963194228}
+  cam: {fileID: 963194227}
+  animator: {fileID: 0}
+  playerScript: {fileID: 0}
+  masterCanvas: {fileID: 0}
   speed: 20
   gravity: -100
   jumpHeight: 20
+  dashing: 0
   groundCheck: {fileID: 915861557}
   groundDistance: 0.4
   groundMask:
@@ -1477,7 +1481,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2104842998}
-  m_LocalRotation: {x: 0.18255737, y: -0.000000016917236, z: 0.0000000031411607, w: 0.98319525}
+  m_LocalRotation: {x: 0.18255739, y: 0.00000001691723, z: -0.0000000031411433, w: 0.98319525}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
