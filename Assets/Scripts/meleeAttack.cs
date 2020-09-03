@@ -15,7 +15,23 @@ public class meleeAttack : StateMachineBehaviour
 
         if (Physics.CheckBox(MeleeHitCenter, new Vector3(2, 2, 2), Quaternion.identity, ~10))
         {
-            Debug.Log("enemy hit");
+            if(GameObject.FindGameObjectsWithTag("Enemy") != null)
+            {
+                GameObject closestEnemy = GameObject.FindGameObjectsWithTag("Enemy")[0];
+
+                foreach (GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+                {
+                    float thisDist = (MeleeHitCenter - enemy.transform.position).magnitude;
+                    float closestDist = (MeleeHitCenter - closestEnemy.transform.position).magnitude;
+
+                    if (thisDist < closestDist)
+                    {
+                        closestEnemy = enemy;
+                    }
+                }
+
+                closestEnemy.GetComponent<CharacterParent>().meleeHit(50, 10);
+            }
         }
     }
 

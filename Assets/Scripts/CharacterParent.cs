@@ -474,6 +474,11 @@ public class CharacterParent : MonoBehaviour {
             Die();
     }
 
+    public void meleeHit(float damageAmount, float criticalRate)
+    {
+        TakeDamage(DamageType.Kinetic, damageAmount, criticalRate);
+    }
+
     /// <summary>
     /// Kills the character.
     /// </summary>
