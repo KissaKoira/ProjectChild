@@ -26902,5 +26902,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Chainsaw
       objectReference: {fileID: 0}
+    - target: {fileID: 7382263619887258108, guid: 9489191c91a3c644f98423b6f0610a72,
+        type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9489191c91a3c644f98423b6f0610a72, type: 3}

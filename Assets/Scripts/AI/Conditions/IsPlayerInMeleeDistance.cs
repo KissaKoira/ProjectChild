@@ -6,7 +6,7 @@ namespace AI
     public class IsPlayerInMeleeDistance : Condition
     {
         [SerializeField]
-        private float distance = 5;
+        private float distance = 10;
 
         private float sqrDistance;
 

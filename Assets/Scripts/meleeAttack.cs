@@ -11,28 +11,40 @@ public class meleeAttack : StateMachineBehaviour
 
     public override void OnStateUpdate(Animator animator, AnimatorStateInfo animatorStateInfo, int layerIndex)
     {
-        Vector3 MeleeHitCenter = GameObject.Find("MeleeCheck").transform.position;
+        GameObject thisUnit = animator.transform.parent.parent.gameObject;
 
-        if (Physics.CheckBox(MeleeHitCenter, new Vector3(2, 2, 2), Quaternion.identity, ~10))
-        {
-            if(GameObject.FindGameObjectsWithTag("Enemy") != null)
+        if (thisUnit.CompareTag("Player")){
+            Debug.Log(thisUnit);
+
+            Vector3 MeleeHitCenter = GameObject.Find("MeleeCheck").transform.position;
+
+            if (Physics.CheckBox(MeleeHitCenter, new Vector3(2, 2, 2), Quaternion.identity, ~10))
             {
-                GameObject closestEnemy = GameObject.FindGameObjectsWithTag("Enemy")[0];
-
-                foreach (GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+                if (GameObject.FindGameObjectsWithTag("Enemy") != null)
                 {
-                    float thisDist = (MeleeHitCenter - enemy.transform.position).magnitude;
-                    float closestDist = (MeleeHitCenter - closestEnemy.transform.position).magnitude;
+                    GameObject closestEnemy = GameObject.FindGameObjectsWithTag("Enemy")[0];
 
-                    if (thisDist < closestDist)
+                    foreach (GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
                     {
-                        closestEnemy = enemy;
-                    }
-                }
+                        float thisDist = (MeleeHitCenter - enemy.transform.position).magnitude;
+                        float closestDist = (MeleeHitCenter - closestEnemy.transform.position).magnitude;
 
-                closestEnemy.GetComponent<CharacterParent>().meleeHit(50, 10);
+                        if (thisDist < closestDist)
+                        {
+                            closestEnemy = enemy;
+                        }
+                    }
+
+                    closestEnemy.GetComponent<CharacterParent>().meleeHit(50, 10);
+                }
             }
         }
+        else if(thisUnit.CompareTag("Enemy"))
+        {
+            Debug.Log(thisUnit);
+            GameObject.Find("Player").GetComponent<CharacterParent>().meleeHit(50, 10);
+        }
+       
     }
 
     public override void OnStateExit(Animator animator, AnimatorStateInfo animatorStateInfo, int layerIndex)

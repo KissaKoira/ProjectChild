@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d9056d499ed59b479557e02dce944fb, type: 3}
   m_Name: IsPlayerInMeleeDistance
   m_EditorClassIdentifier: 
-  distance: 50
+  distance: 10
