@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class meleeAttack : StateMachineBehaviour
 {
+   
     public override void OnStateEnter(Animator animator, AnimatorStateInfo animatorStateInfo, int layerIndex)
     {
 
@@ -13,11 +15,56 @@ public class meleeAttack : StateMachineBehaviour
     {
         Vector3 MeleeHitCenter = GameObject.Find("MeleeCheck").transform.position;
 
+<<<<<<< Updated upstream
         if (Physics.CheckBox(MeleeHitCenter, new Vector3(2, 2, 2), Quaternion.identity, ~10))
         {
             Debug.Log("enemy hit");
+=======
+        if (thisUnit.CompareTag("Player")){
+            Debug.Log(thisUnit);
+
+            Vector3 MeleeHitCenter = GameObject.Find("MeleeCheck").transform.position;
+
+            if (Physics.CheckBox(MeleeHitCenter, new Vector3(2, 2, 2), Quaternion.identity, ~10))
+            {
+                if (GameObject.FindGameObjectsWithTag("Enemy") != null)
+                {
+                    GameObject closestEnemy = GameObject.FindGameObjectsWithTag("Enemy")[0];
+
+                    foreach (GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+                    {
+                        float thisDist = (MeleeHitCenter - enemy.transform.position).magnitude;
+                        float closestDist = (MeleeHitCenter - closestEnemy.transform.position).magnitude;
+
+                        if (thisDist < closestDist)
+                        {
+                            closestEnemy = enemy;
+                        }
+                    }
+
+                    
+                    MeleeSettings.MeleeDamageGameObject = closestEnemy;
+
+                }
+            }
+        }
+        else if(thisUnit.CompareTag("Enemy"))
+        {
+            //Debug.Log(thisUnit);
+
+
+            MeleeSettings.MeleeDamageName = "Player";
+            MeleeSettings.MeleeDamageGameObject = null;
+        }
+        else
+        {
+            MeleeSettings.MeleeDamageName = null;
+            MeleeSettings.MeleeDamageGameObject = null;
+>>>>>>> Stashed changes
         }
     }
+     
+    
 
     public override void OnStateExit(Animator animator, AnimatorStateInfo animatorStateInfo, int layerIndex)
     {
